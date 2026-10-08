@@ -306,19 +306,29 @@ class Matrix<P> {
 
   /// Java: `public void uncover(Header column)`.
   ///
-  /// The precise mirror of [cover], and the mirroring is structural, not cosmetic:
+  /// The mirror of [cover], statement for statement:
   ///
-  /// * [cover] unsplices the header **first**, then walks `down`/`right`;
-  ///   [uncover] walks `up`/`left` **first**, then re-splices the header.
-  /// * [cover] decrements `_size` **after** rewiring the vertical links;
-  ///   [uncover] increments it **before**. (In Java the three statements inside the inner
-  ///   loop are literally in reverse order, `size++` first.)
+  /// * [cover] unsplices the header first, then walks `down`/`right`;
+  ///   [uncover] walks `up`/`left` first, then re-splices the header.
+  /// * [cover] decrements `_size` after rewiring the vertical links;
+  ///   [uncover] increments it before. (In Java the three statements inside the
+  ///   inner loop are literally in reverse order, `size++` first.)
   /// * `_columnCount` goes down in [cover] and back up here.
   ///
-  /// Dancing Links restores state by undoing operations in exactly reverse order; a
-  /// "tidied up" uncover that walks `down`/`right` instead produces a *different but still
-  /// consistent* torus for any column whose rows were partially removed, and the search then
-  /// explores a different tree. The puzzles still solve. The node count does not match.
+  /// **Kept in Java's order for diffability, NOT because the order is load-bearing.**
+  /// An earlier version of this comment asserted that a "tidied up" uncover walking
+  /// `down`/`right` would leave a different torus and change the node count. That is
+  /// false, and it was disproved the right way round: the three claims were applied as
+  /// mutations to the *Java* (`uncover` walking `down`/`right`; `size++` moved last;
+  /// `cover`'s header unsplice moved after the loops) and every mutant survived a
+  /// 76-probe API mirror, 24 full 9x9 solves and 150,000 randomised matrices.
+  ///
+  /// The restore is order-independent because `j._down._up = j` feeds the corrected
+  /// `_up` pointer forward, so walking either direction reaches the same fixed point;
+  /// and `cover`'s inner loops never traverse the root ring, so when the header leaves
+  /// it does not matter. Preserving Java's order still has a point -- it keeps the two
+  /// files diffable line by line, which is how this port is reviewed -- but do not
+  /// believe a comment that claims an invariant without saying how it was tested.
   void uncover(Header column) {
     for (Data i = column._up; i != column; i = i._up) {
       for (Data j = i._left; j != i; j = j._left) {

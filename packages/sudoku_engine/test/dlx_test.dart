@@ -258,10 +258,18 @@ void main() {
       expect(m.getRow('r'), isNull);
     });
 
-    test('an all-false vector registers a null row for a present key', () {
-      // Same null-valued put, reached the common way. The hand-fused cross-check twin in
-      // difftest-harness/oracle-dart/oracle.dart adds `&& row != null` and skips the put;
-      // indistinguishable through getRow, which is the map's only reader.
+    test('an all-false vector adds no nodes and no row', () {
+      // NAME CORRECTED, and the limit is worth stating: this test CANNOT observe
+      // whether the null-valued put happens. Java does `rowByPayload.put(payload,
+      // row)` with a null row; the cross-check twin adds `&& row != null` and skips
+      // it. Both answer every getRow identically, because getRow is the map's only
+      // reader and it cannot distinguish "absent" from "present and null".
+      //
+      // This was verified by mutation rather than argued: the twin's skip-the-put
+      // variant, applied to the Java, survived the full mirrored probe set, 24 9x9
+      // solves and 150,000 randomised matrices. So the port's choice to keep Java's
+      // put is faithful but untestable through the public API -- which is why this
+      // test no longer claims to test it.
       final Matrix<String> m = Matrix<String>();
       m.addColumn(Header('a'));
       m.addColumn(Header('b'));
@@ -307,15 +315,31 @@ void main() {
       },
     );
 
-    test('the map is never iterated, so its order cannot reach the trace', () {
-      // Nothing in the package exposes keys/values/entries/length, which is what makes
-      // Java's HashMap (unordered) and Dart's Map (insertion-ordered) interchangeable here.
-      final Matrix<String> m = Matrix<String>();
-      m.addColumn(Header('a'));
-      m.addRow('r', _vec(1, <int>[0]));
-      // ignore: unnecessary_type_check
-      expect(m is Matrix<String>, isTrue);
-      expect(m.getRow('nope'), isNull);
+    test('insertion order does not affect what getRow returns', () {
+      // Java keys this map with a HashMap (unordered); Dart's Map is
+      // insertion-ordered. They are interchangeable here because nothing in the
+      // package exposes keys/values/entries/length -- getRow is the only reader.
+      //
+      // The previous version of this test asserted `m is Matrix<String>` and that
+      // `getRow('nope')` is null. Neither has anything to do with ordering, and it
+      // would have passed against any implementation whatsoever. What can actually
+      // be observed is that two matrices built in OPPOSITE insertion orders answer
+      // every lookup identically.
+      List<String?> probe(List<String> insertionOrder) {
+        final Matrix<String> m = Matrix<String>();
+        m.addColumn(Header('a'));
+        m.addColumn(Header('b'));
+        for (final String key in insertionOrder) {
+          m.addRow(key, _vec(2, <int>[0]));
+        }
+        return <String?>[
+          for (final String key in <String>['p', 'q', 'r', 'absent'])
+            m.getRow(key)?.payload as String?,
+        ];
+      }
+
+      expect(probe(<String>['p', 'q', 'r']), probe(<String>['r', 'q', 'p']));
+      expect(probe(<String>['p', 'q', 'r']), <String?>['p', 'q', 'r', null]);
     });
   });
 
@@ -545,7 +569,17 @@ void main() {
       },
     );
 
-    test('the list handed to the sorter is fixed-length and mutable, like a Java array', () {
+    test('the list handed to the sorter is fixed-length but element-mutable', () {
+      // A PROXY for Java's `Data[]`, not a Java behaviour: a Java array has no add
+      // or removeLast to throw. What genuinely must hold is the fixed-length,
+      // element-assignable contract, because DlxPuzzleSolver.Strategy.sort does an
+      // in-place Fisher-Yates shuffle indexing rows[i - 1]. A growable list would
+      // satisfy that too, so the throws below are the port being stricter than Java
+      // rather than equal to it.
+      //
+      // Note this is also the only sorter test passing a null comparator, so it
+      // chooses a different column than its siblings (JVM column chain lengths
+      // [1, 1, 2], not [2, 1, 1]). Harmless -- it asserts no lengths.
       final _Built b = sorterFixture();
       final _ReversingSorter sorter = _ReversingSorter();
       Solver(b.m, _Recorder(), null, sorter).search();

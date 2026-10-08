@@ -379,4 +379,97 @@ void main() {
       expect(flags, contains(false));
     });
   });
+
+  group('nextInt() no-arg -- next(32), captured from the pinned JDK 17', () {
+    // Vectors generated with:
+    //   Random r = new Random(seed); for (i<8) print(r.nextInt());
+    // on liberica-jdk-17-full (the JDK tool/env.sh pins). These are the ONLY
+    // vectors in this file that exercise _next(32), and they exist because
+    // mutation testing showed that deleting `.toSigned(32)` from _next was
+    // undetectable by every other test here: nextInt(bound) and nextBoolean
+    // ask for 31 and 1 bits, where the shift result is already non-negative.
+    const Map<int, List<int>> golden = <int, List<int>>{
+      0: [
+        -1155484576,
+        -723955400,
+        1033096058,
+        -1690734402,
+        -1557280266,
+        1327362106,
+        -1930858313,
+        502539523,
+      ],
+      1: [
+        -1155869325,
+        431529176,
+        1761283695,
+        1749940626,
+        892128508,
+        155629808,
+        1429008869,
+        -1465154083,
+      ],
+      42: [
+        -1170105035,
+        234785527,
+        -1360544799,
+        205897768,
+        1325939940,
+        -248792245,
+        1190043011,
+        -1255373459,
+      ],
+      -1: [
+        1155099827,
+        1887904451,
+        52699159,
+        -1941176418,
+        -1451336087,
+        -1714570420,
+        1788588954,
+        1714930956,
+      ],
+      123456789: [
+        -1442945365,
+        -1016548095,
+        1962592967,
+        1094656688,
+        1677212580,
+        930275108,
+        -458096230,
+        1827465615,
+      ],
+    };
+
+    golden.forEach((int seed, List<int> expected) {
+      test('seed $seed reproduces the JVM sequence', () {
+        final JavaRandom random = JavaRandom(seed);
+        final List<int> actual = <int>[
+          for (int i = 0; i < expected.length; i++) random.nextInt(),
+        ];
+        expect(actual, expected);
+      });
+    });
+
+    test('returns negatives -- this is what kills the toSigned(32) mutant', () {
+      // Without `.toSigned(32)` in _next, this returns 3139482720.
+      expect(JavaRandom(0).nextInt(), -1155484576);
+      expect(JavaRandom(0).nextInt().isNegative, isTrue);
+    });
+
+    test('Dart % is NOT Java % at the Solver_Manager call site', () {
+      // Solver_Manager.java:558 is
+      //   Math.abs(new Random().nextInt() % list_hints.size())
+      // Java truncates toward zero, Dart is Euclidean. Measured on the JVM:
+      //   x = -1155484576:  Java x%9 = -1, Math.abs = 1;  Dart x%9 = 8
+      //   y = -1170105035:  Java y%9 = -5, Math.abs = 5;  Dart y%9 = 4
+      // A wrong value here is a different hint shown to the player.
+      const int x = -1155484576;
+      const int y = -1170105035;
+      expect(x.remainder(9).abs(), 1, reason: 'the faithful translation');
+      expect(y.remainder(9).abs(), 5, reason: 'the faithful translation');
+      expect(x % 9, 8, reason: 'Euclidean -- what Java does NOT do');
+      expect(y % 9, 4, reason: 'Euclidean -- what Java does NOT do');
+    });
+  });
 }

@@ -120,14 +120,68 @@ class JavaRandom {
   ///
   /// The `>>` here is a *logical* shift in effect, not an arithmetic one:
   /// `_seed` is masked to 48 bits and so never negative, so Dart's `>>` and
-  /// Java's `>>>` agree. `.toSigned(32)` reproduces the `(int)` cast, which
-  /// matters only for `bits == 32` -- but the two call sites below ask for 31
-  /// and 1, so in practice it is documentation of intent. Keep it anyway: a
-  /// future `nextLong`/`nextDouble` would need `next(32)` to go negative.
+  /// Java's `>>>` agree. `.toSigned(32)` reproduces the `(int)` cast, and it is
+  /// **load-bearing for `bits == 32`**, which [nextInt] (no-arg) asks for: without
+  /// it `JavaRandom(0).nextInt()` returns 3139482720 instead of Java's
+  /// -1155484576. An earlier version of this comment called it "documentation of
+  /// intent" because only `_next(31)` and `_next(1)` were reachable then --
+  /// mutation testing confirmed its removal was undetectable by the whole suite.
+  /// There is now a golden vector for the 32-bit case specifically to kill that
+  /// mutant.
   int _next(int bits) {
     _seed = (_seed * _multiplier + _addend) & _mask;
     return (_seed >> (48 - bits)).toSigned(32);
   }
+
+  /// Java: `public int nextInt()` -- the no-arg form, `next(32)`, which returns a
+  /// value spanning the whole signed 32-bit range INCLUDING negatives.
+  ///
+  /// ```java
+  /// public int nextInt() { return next(32); }      // JDK 17 Random.java:259
+  /// ```
+  ///
+  /// This exists because the in-scope Java uses it in twelve places, all of the
+  /// shape `new Random().nextInt()`:
+  ///
+  /// - `AndokuPuzzle.java:799, 800, 835, 836, 890, 891, 913, 914, 935, 936` --
+  ///   inside `isActualMarksOk`, `getAll_isActualMarksOk`, `needAnyCellAnotations`,
+  ///   `getAll_needAnyCellAnotations` and `anyTrivialSolution`.
+  /// - `Solver_Manager.java:558, 591` --
+  ///   `index_sol = Math.abs(new Random().nextInt() % list_hints.size())`, i.e.
+  ///   *which hint the player is shown*.
+  ///
+  /// ## Two traps at those call sites
+  ///
+  /// **1. Dart's `%` is not Java's `%`.** Java truncates toward zero; Dart is
+  /// Euclidean and always returns a non-negative result for a positive divisor.
+  /// So `Math.abs(new Random().nextInt() % n)` does **not** translate as
+  /// `r.nextInt() % n`. Measured on the pinned JDK 17:
+  ///
+  /// | | `x = JavaRandom(0).nextInt()` = -1155484576 | `y = JavaRandom(42).nextInt()` = -1170105035 |
+  /// |---|---|---|
+  /// | Java `x % 9` | `-1` | `-5` |
+  /// | Java `Math.abs(x % 9)` | **`1`** | **`5`** |
+  /// | Dart `x % 9` | `8` | `4` |
+  /// | Dart `x.remainder(9).abs()` | **`1`** | **`5`** |
+  ///
+  /// Use `.remainder(n).abs()`. A different value here is a different starting
+  /// cell in `needAnyCellAnotations`, and a different hint in `Solver_Manager` --
+  /// user-visible, not internal.
+  ///
+  /// **2. `new Random()` is time-seeded, and that is deliberately NOT reproduced.**
+  /// Java's no-arg constructor seeds from `seedUniquifier() ^ System.nanoTime()`,
+  /// so every one of those twelve call sites is nondeterministic *in the original*
+  /// -- two runs of the Java app disagree. There is therefore nothing to be
+  /// byte-identical to, and this class offers no no-arg constructor on purpose: a
+  /// trace that depends on an unseeded `Random` cannot be compared at all. When
+  /// those call sites are ported, thread an explicit seed in from the caller and
+  /// record the choice, rather than reaching for `dart:math` (which is an R-06
+  /// violation that nothing would catch) or inventing a hidden time seed.
+  /// Dart has no overloading, so Java's `nextInt()` and `nextInt(int)` collapse
+  /// into this one method with an optional bound. Both Java call shapes survive
+  /// unchanged: `r.nextInt()` and `r.nextInt(9)`.
+  int nextInt([int? bound]) =>
+      bound == null ? _next(32) : _nextIntBounded(bound);
 
   /// Java: `public int nextInt(int bound)`.
   ///
@@ -172,7 +226,7 @@ class JavaRandom {
   ///
   /// Throws [ArgumentError] for a non-positive [bound], as Java throws
   /// `IllegalArgumentException("bound must be positive")`.
-  int nextInt(int bound) {
+  int _nextIntBounded(int bound) {
     if (bound <= 0) {
       throw ArgumentError.value(bound, 'bound', 'bound must be positive');
     }
