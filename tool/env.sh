@@ -28,6 +28,11 @@ export UPSTREAM="$WORKSPACE/FreeSodukuSrc"
 export HARNESS="$WORKSPACE/difftest-harness"
 export ANDROID_REF="$WORKSPACE/android-ref"
 
+# The oracle reads the UPSTREAM corpus, not the vendored copy. They are byte-identical
+# (verified), but keeping them distinct means a divergence between them shows up as a
+# diff rather than hiding because both sides read the same file.
+export UPSTREAM_ASSETS="$UPSTREAM/app/src/main/assets/puzzles"
+
 # --- pinned versions ---------------------------------------------------------
 # Measured, not copied from documentation. Regenerate with:
 #   fvm flutter --version --machine   (NOTE: emits MULTI-LINE pretty JSON)
