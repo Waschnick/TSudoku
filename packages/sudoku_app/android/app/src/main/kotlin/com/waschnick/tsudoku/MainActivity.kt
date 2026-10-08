@@ -1,4 +1,4 @@
-package com.coolandroidappzfree.sudoku_app
+package com.waschnick.tsudoku
 
 import io.flutter.embedding.android.FlutterActivity
 
