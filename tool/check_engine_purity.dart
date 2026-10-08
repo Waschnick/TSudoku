@@ -34,7 +34,8 @@ import 'dart:io';
 /// Imports the engine may never contain, with the reason each is banned.
 const Map<String, String> forbidden = <String, String>{
   'package:flutter': 'the engine must not depend on the UI framework',
-  'package:flutter_test': 'engine tests run under `dart test`, not `flutter test`',
+  'package:flutter_test':
+      'engine tests run under `dart test`, not `flutter test`',
   'dart:ui': 'rendering types belong in sudoku_app',
   'dart:io': 'the engine must not touch the filesystem, process or network',
   'dart:isolate': 'concurrency would make trace ordering nondeterministic',
@@ -50,25 +51,30 @@ final RegExp _directive = RegExp(
 );
 
 void main(List<String> argv) {
-  final String engineDir = argv.isNotEmpty ? argv.first : 'packages/sudoku_engine';
+  final String engineDir = argv.isNotEmpty
+      ? argv.first
+      : 'packages/sudoku_engine';
   final Directory root = Directory(engineDir);
 
   // A gate that cannot find its target must FAIL, not pass. The equivalent mistake in
   // QUALITY.md's G1 and G9a -- globbing a path that no longer exists and exiting 0 -- is
   // precisely how a renamed directory turns a gate into a no-op.
   if (!root.existsSync()) {
-    stderr.writeln('PURITY: cannot run -- engine directory not found: $engineDir');
+    stderr.writeln(
+      'PURITY: cannot run -- engine directory not found: $engineDir',
+    );
     exitCode = 2;
     return;
   }
 
-  final List<File> sources = root
-      .listSync(recursive: true, followLinks: false)
-      .whereType<File>()
-      .where((File f) => f.path.endsWith('.dart'))
-      .where((File f) => !f.path.contains('/.dart_tool/'))
-      .toList()
-    ..sort((File a, File b) => a.path.compareTo(b.path));
+  final List<File> sources =
+      root
+          .listSync(recursive: true, followLinks: false)
+          .whereType<File>()
+          .where((File f) => f.path.endsWith('.dart'))
+          .where((File f) => !f.path.contains('/.dart_tool/'))
+          .toList()
+        ..sort((File a, File b) => a.path.compareTo(b.path));
 
   if (sources.isEmpty) {
     stderr.writeln('PURITY: cannot run -- no .dart files under $engineDir');
@@ -93,9 +99,12 @@ void main(List<String> argv) {
     }
   }
 
-  final String scanned = '${sources.length} file${sources.length == 1 ? '' : 's'}';
+  final String scanned =
+      '${sources.length} file${sources.length == 1 ? '' : 's'}';
   if (violations > 0) {
-    stderr.writeln('\nPURITY FAIL: $violations violation(s) across $scanned in $engineDir');
+    stderr.writeln(
+      '\nPURITY FAIL: $violations violation(s) across $scanned in $engineDir',
+    );
     exitCode = 1;
     return;
   }

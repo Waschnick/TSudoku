@@ -7,7 +7,9 @@ import 'package:sudoku_app/main.dart';
 import 'package:sudoku_engine/sudoku_engine.dart';
 
 void main() {
-  testWidgets('app renders and can read across the package boundary', (WidgetTester t) async {
+  testWidgets('app renders and can read across the package boundary', (
+    WidgetTester t,
+  ) async {
     await t.pumpWidget(const TSudokuApp());
     expect(find.text('TSudoku'), findsAtLeast(1));
     // The point of this assertion is the boundary, not the string: the value comes from

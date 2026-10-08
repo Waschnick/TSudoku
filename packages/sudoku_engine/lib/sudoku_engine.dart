@@ -35,4 +35,5 @@ library;
 const String engineVersion = '0.1.0';
 
 /// The upstream application this port reproduces, for attribution in UI and traces.
-const String upstreamApplication = 'Free Sudoku 1.060 (com.coolandroidappzfree.freesudoku)';
+const String upstreamApplication =
+    'Free Sudoku 1.060 (com.coolandroidappzfree.freesudoku)';
