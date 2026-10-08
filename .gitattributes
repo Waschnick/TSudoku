@@ -1,0 +1,15 @@
+# Byte fidelity is a correctness requirement in this project, not a preference.
+#
+# The .adk puzzle corpus is CRLF and 22 of the 96 files have no trailing newline.
+# Field 3 of a record ("X" for X-sudoku) is followed by CR, and the Dart parser must
+# split on /\r?\n/ to match the Java original. The global git config here sets
+# core.autocrlf=input, which silently rewrites CRLF to LF on `git add` -- measured to
+# strip all 718 CR bytes from squiggly_x_1.adk. That would make the port diverge from
+# the Java oracle with no error anywhere. So: git performs NO line-ending conversion
+# in this repository, for any file.
+* -text
+
+# Golden traces and digests are compared byte-for-byte.
+*.zst   binary
+*.trace binary
+*.adk   binary
