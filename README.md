@@ -62,3 +62,12 @@ left for someone to discover while playing.
 ## State
 
 Early. The toolchain and the verification harness are in place; the translation is not.
+
+## Where the port deliberately differs from the original
+
+Correctness here is defined by the Java original and verified by byte-identical trace
+comparison against a JVM oracle over all 45,100 in-scope puzzles. Where the port
+*deliberately* departs from the Java anyway, it is recorded in
+[DIVERGENCES.md](DIVERGENCES.md) with a D-number, and each entry is pinned by a unit test
+naming that number — because a divergence the oracle cannot observe is one that nothing
+will catch when it later becomes wrong.

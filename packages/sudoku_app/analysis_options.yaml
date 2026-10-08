@@ -7,7 +7,12 @@
 
 # The following line activates a set of recommended lints for Flutter apps,
 # packages, and plugins designed to encourage good coding practices.
-include: package:flutter_lints/flutter.yaml
+# flutter_lints for the Flutter-specific rules, plus the workspace file for the
+# fidelity rules. Both are needed: the analyzer uses only the nearest ancestor options
+# file, so omitting the second line silently disables every workspace rule here.
+include:
+  - package:flutter_lints/flutter.yaml
+  - ../../analysis_options.yaml
 
 analyzer:
   exclude:

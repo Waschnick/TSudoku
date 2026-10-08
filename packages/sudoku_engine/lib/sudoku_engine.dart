@@ -24,9 +24,29 @@
 /// `tool/check_engine_purity.dart`, because the analyzer cannot express it -- an illegal
 /// `import 'dart:io'` produces no diagnostic at all.
 ///
-/// Nothing is implemented yet. The translation order and the exit criteria for each step
-/// are in the port plan; this library is the destination for all of it.
+/// Translation progress follows the order in the port plan's Phase 2 table. Everything
+/// exported here has been verified against the Java original by byte-identical trace
+/// comparison -- `difftest-harness/tool/diff.sh`. Nothing is exported on the strength of
+/// a code review alone.
 library;
+
+export 'src/model/geometry.dart'
+    show ExtraRegion, ExtraRegions, Position, Region;
+export 'src/model/puzzle.dart' show Puzzle;
+export 'src/model/puzzle_type.dart'
+    show Difficulty, PuzzleType, difficultyFromFolderName;
+export 'src/model/value_set.dart' show ValueSet;
+export 'src/solver/dlx_puzzle_solver.dart' show DlxPuzzleSolver;
+export 'src/solver/puzzle_solver.dart'
+    show
+        PuzzleReporter,
+        PuzzleSolver,
+        SingleSolutionReporter,
+        SolutionCounterReporter,
+        UniqueSolutionReporter;
+export 'src/transfer/puzzle_decoder.dart' show decodePuzzle, javaSplitPipe;
+export 'src/transfer/standard_areas.dart' show standardAreas;
+export 'src/util/java_random.dart' show JavaRandom;
 
 /// Identifies this engine build in traces and in the about screen.
 ///

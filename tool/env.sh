@@ -74,6 +74,12 @@ if [ -x "$TS_ROOT/.fvm/flutter_sdk/bin/flutter" ]; then
   export PATH="$TS_ROOT/.fvm/flutter_sdk/bin:$PATH"
 fi
 
+# Absolute paths to the pinned SDK binaries. Harness scripts use these rather than a bare
+# `dart`, so that a script which forgets to source this file fails loudly on an unset
+# variable instead of quietly running whichever Dart the login shell happens to expose.
+export FLUTTER="$(command -v flutter || true)"
+export DART="$(command -v dart || true)"
+
 # --- helpers -----------------------------------------------------------------
 
 # `sleep` is unavailable in some sandboxed runners; poll with a portable spin.

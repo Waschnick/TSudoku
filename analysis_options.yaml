@@ -1,4 +1,11 @@
-# Workspace-wide analysis options. Both packages include this file.
+# Workspace-wide analysis options.
+#
+# Both packages include this file -- and until 2026-10-08 neither did. Each package had
+# the stock template `analysis_options.yaml` that `dart create` writes, and the analyzer
+# uses the NEAREST ancestor options file, so every rule below was silently inert for all
+# package code. Measured: an unused import inside the engine reported as a *warning*
+# rather than the `error` configured here. A workspace-root options file is not inherited
+# by workspace members; it has to be included explicitly.
 #
 # The engine additionally has a HARD purity rule that the analyzer cannot express:
 # `import 'dart:io'` in a pure Dart package produces no diagnostic at all (measured --
@@ -17,9 +24,13 @@ analyzer:
     unused_local_variable: error
     dead_code: error
     unrelated_type_equality_checks: error
-    # Integer division and shifts behave differently in Dart than in Java; never let
-    # one slip through as a warning.
-    division_optimization: error
+    # NOTE: an earlier version of this file carried `division_optimization: error` here,
+    # with a comment claiming it guarded the Java/Dart integer-division difference. That
+    # lint does not exist in this SDK at all (grep over the whole Flutter SDK: 0 hits), so
+    # the entry was dead and the analyzer reported it as an unrecognized diagnostic code --
+    # which `--fatal-infos` does not fail on, because it is a warning about the config
+    # rather than about the code. Integer division is covered by R-10 review and by the
+    # differential trace, not by a lint.
 
 linter:
   rules:
