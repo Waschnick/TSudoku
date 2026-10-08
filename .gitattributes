@@ -13,3 +13,7 @@
 *.zst   binary
 *.trace binary
 *.adk   binary
+
+# LICENSE is stored LF. Byte fidelity matters for the puzzle corpus and the golden
+# traces, not for the licence text, and GitHub's licence detector works from the
+# canonical LF form. `* -text` still applies: git performs no conversion either way.
