@@ -1,0 +1,33 @@
+# Workspace-wide analysis options. Both packages include this file.
+#
+# The engine additionally has a HARD purity rule that the analyzer cannot express:
+# `import 'dart:io'` in a pure Dart package produces no diagnostic at all (measured --
+# dart:io is a core library, so no dependency lint fires). tool/check_engine_purity.dart
+# exists for exactly that gap and is not optional.
+include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-raw-types: true
+  errors:
+    # A port is judged by fidelity to the original, so anything that silently changes
+    # behaviour is an error, not advice.
+    unused_import: error
+    unused_local_variable: error
+    dead_code: error
+    unrelated_type_equality_checks: error
+    # Integer division and shifts behave differently in Dart than in Java; never let
+    # one slip through as a warning.
+    division_optimization: error
+
+linter:
+  rules:
+    # Fidelity-oriented
+    always_declare_return_types: true
+    avoid_dynamic_calls: true
+    prefer_final_locals: true
+    unnecessary_parenthesis: false   # parens often mirror the Java precedence; keep them
+    # Documentation of intent matters more than usual here, because the reference is
+    # another language's source file.
+    comment_references: true

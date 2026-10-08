@@ -1,0 +1,17 @@
+# TSudoku -- pub workspace root.
+#
+# This file exists ONLY to declare the workspace. It is not a package you run.
+# Every real command runs inside one of the members:
+#   cd packages/sudoku_engine && dart test
+#   cd packages/sudoku_app    && flutter run
+# Invoking `flutter test` or `flutter build` from HERE fails ("Target file
+# lib/main.dart not found") -- that is expected, not a misconfiguration.
+name: tsudoku_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.13.5
+
+workspace:
+  - packages/sudoku_engine
+  - packages/sudoku_app

@@ -1,0 +1,45 @@
+# --- tooling -----------------------------------------------------------------
+.fvm/
+.dart_tool/
+build/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# pubspec.lock IS tracked at the workspace root: it is the single resolution for
+# every member, and this is an application, not a library.
+packages/*/pubspec.lock
+
+# --- secrets: this repository is PUBLIC ---------------------------------------
+# Nothing below may ever be committed. Signing material and service configs only.
+*.p8
+*.p12
+*.jks
+*.keystore
+*.mobileprovision
+key.properties
+local.properties
+google-services.json
+GoogleService-Info.plist
+**/ios/Runner/GoogleService-Info.plist
+.env
+*.pem
+
+# --- macOS / editors ---------------------------------------------------------
+.DS_Store
+*.swp
+.idea/
+*.iml
+.vscode/
+
+# --- iOS / Android build droppings -------------------------------------------
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/ephemeral/
+**/android/.gradle/
+**/android/local.properties
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/

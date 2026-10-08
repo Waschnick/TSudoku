@@ -1,0 +1,20 @@
+# Sudoku - a sudoku puzzle game for Android based of the original Andoku, by Markus Wiederkehr, and the Sudoku Explainer by Nicolas Juillerat
+# Copyright (C) 2006-2007 Nicolas Juillerat
+# Copyright (C) 2011-2017 Cool Android Appz
+# Copyright (C) 2009-2011 Markus Wiederkehr
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+....4678....8....1..8...2.4.2.6.1..88...2...59..3.8.2.1.4...9..5....7....3791....
+5.2..89671..7..452.675..3812136578496548912737....46158219...343.6....98..5.83.26
+197846532..8.5.719352917648831769425524138976..9524183.864....1..36....79.5....64

@@ -1,0 +1,20 @@
+name: sudoku_engine
+description: >-
+  The TSudoku game engine: puzzle model, Dancing Links solver, command/history undo stack,
+  input-method state machines and the Sudoku Explainer hint engine. Pure Dart by contract --
+  no Flutter, no dart:ui, no dart:io. Enforced by tool/check_engine_purity.dart.
+version: 0.1.0
+publish_to: none
+resolution: workspace
+repository: https://github.com/Waschnick/TSudoku
+
+environment:
+  sdk: ^3.13.5
+
+# Add regular dependencies here.
+dependencies:
+  # path: ^1.9.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
